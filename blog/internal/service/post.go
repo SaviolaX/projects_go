@@ -1,0 +1,97 @@
+package service
+
+import (
+	"github.com/SaviolaX/blog/internal/dto"
+	"github.com/SaviolaX/blog/internal/model"
+	"github.com/SaviolaX/blog/internal/repository"
+)
+
+type PostService interface {
+	Create(req *dto.CreatePostRequest, authorID uint) error
+	FindAll() ([]*dto.PostResponse, error)
+	FindByID(id uint) (*dto.PostResponse, error)
+	Update(id uint, req *dto.UpdatePostRequest) error
+	Delete(id uint) error
+}
+
+type postService struct {
+	repo repository.PostRepository
+}
+
+func (ps *postService) Delete(id uint) error {
+	err := ps.repo.Delete(id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (ps *postService) Update(id uint, req *dto.UpdatePostRequest) error {
+	var post model.Post
+
+	post.ID = id
+	post.Title = req.Title
+	post.Entry = req.Entry
+	post.CategoryID = req.CategoryID
+
+	err := ps.repo.Update(&post)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (ps *postService) FindByID(id uint) (*dto.PostResponse, error) {
+	post, err := ps.repo.FindByID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	return &dto.PostResponse{
+		ID:        post.ID,
+		Title:     post.Title,
+		Entry:     post.Entry,
+		CreatedAt: post.CreatedAt,
+		UpdatedAt: post.UpdatedAt,
+	}, nil
+}
+
+func (ps *postService) FindAll() ([]*dto.PostResponse, error) {
+	posts, err := ps.repo.FindAll()
+	if err != nil {
+		return nil, err
+	}
+
+	var postsResp []*dto.PostResponse
+	for _, post := range posts {
+		postsResp = append(postsResp, &dto.PostResponse{
+			ID:        post.ID,
+			Title:     post.Title,
+			Entry:     post.Entry,
+			CreatedAt: post.CreatedAt,
+			UpdatedAt: post.UpdatedAt,
+		})
+	}
+
+	return postsResp, nil
+}
+
+func (ps *postService) Create(req *dto.CreatePostRequest, authorID uint) error {
+	var post model.Post
+
+	post.Title = req.Title
+	post.Entry = req.Entry
+	post.AuthorID = authorID
+
+	err := ps.repo.Create(&post)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func NewPostService(repo repository.PostRepository) PostService {
+	return &postService{
+		repo: repo,
+	}
+}
