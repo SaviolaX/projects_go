@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 
+	"github.com/SaviolaX/blog/internal/auth"
 	"github.com/SaviolaX/blog/internal/dto"
 	"github.com/SaviolaX/blog/internal/service"
 	"github.com/gin-gonic/gin"
@@ -14,7 +15,9 @@ type UserHandler interface {
 }
 
 type userHandler struct {
-	service service.UserService
+	expiredHours int
+	secret       string
+	service      service.UserService
 }
 
 func (uh *userHandler) Login(ctx *gin.Context) {
@@ -35,11 +38,18 @@ func (uh *userHandler) Login(ctx *gin.Context) {
 		return
 	}
 
+	jwtToken, err := auth.GenerateToken(user.ID, uh.secret, uh.expiredHours)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "jwt token is not generated"})
+		return
+	}
+
 	ctx.JSON(http.StatusOK, gin.H{
 		"id":        user.ID,
 		"username":  user.Username,
 		"email":     user.Email,
 		"createdAt": user.CreatedAt,
+		"token":     jwtToken,
 	})
 }
 
@@ -65,8 +75,10 @@ func (uh *userHandler) Register(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, gin.H{"status": "created"})
 }
 
-func NewUserHandler(service service.UserService) UserHandler {
+func NewUserHandler(expiredHours int, secret string, service service.UserService) UserHandler {
 	return &userHandler{
-		service: service,
+		expiredHours: expiredHours,
+		secret:       secret,
+		service:      service,
 	}
 }

@@ -103,9 +103,19 @@ func (ph *postHandler) Create(ctx *gin.Context) {
 		return
 	}
 
-	tmpAuthorID := uint(1)
+	userID, ok := ctx.Get("userID")
+	if !ok {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "don't have a userID"})
+		return
+	}
 
-	err = ph.service.Create(&createReq, tmpAuthorID)
+	id, ok := userID.(uint)
+	if !ok {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "incorrect userID format"})
+		return
+	}
+
+	err = ph.service.Create(&createReq, id)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

@@ -20,10 +20,10 @@ func main() {
 	userService := service.NewUserService(userRepo)
 	postService := service.NewPostService(postRepo)
 
-	userHandler := handler.NewUserHandler(userService)
+	userHandler := handler.NewUserHandler(cfg.JWT.ExpireHours, cfg.JWT.Secret, userService)
 	postHandler := handler.NewPostHandler(postService)
 
-	r := handler.SetupRouter(userHandler, postHandler)
+	r := handler.SetupRouter(userHandler, postHandler, cfg.JWT.Secret)
 
 	r.Run(cfg.App.Port)
 }
