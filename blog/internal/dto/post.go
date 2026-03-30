@@ -6,15 +6,11 @@ import (
 	"time"
 )
 
-type CategoryResponse struct {
-	ID   uint
-	Name string
-}
-
 type UpdatePostRequest struct {
-	Title      string
-	Entry      string
-	CategoryID uint
+	Title        string
+	Entry        string
+	CategoryID   uint
+	CategoryName string
 }
 
 type PostResponse struct {
@@ -28,8 +24,10 @@ type PostResponse struct {
 }
 
 type CreatePostRequest struct {
-	Title string
-	Entry string
+	Title        string
+	Entry        string
+	CategoryName string
+	CategoryID   uint
 }
 
 func (rr *CreatePostRequest) Validate() error {

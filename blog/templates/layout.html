@@ -1,0 +1,55 @@
+{{ define "layout" }}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ block "title" . }}📖 My Blog{{ end }}</title>
+    <script src="https://unpkg.com/htmx.org@2.1.0"></script>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+    <nav>
+        <span class="nav-logo">🚀 my blog</span>
+        <div class="nav-links">
+            <a href="/">home</a>
+            {{ if .user }}
+            <a href="/posts/create"><button class="nav-btn">+ new post</button></a>
+            <div class="user-menu">
+                <button class="user-trigger"
+                    onclick="document.getElementById('user-dropdown').classList.toggle('open')">
+                    {{ .user.Username }} ▾
+                </button>
+                <div class="dropdown" id="user-dropdown">
+                    <div class="dropdown-divider"></div>
+                    <form method="post" action="/logout" style="margin:0;">
+                        <button class="dropdown-item danger" type="submit">logout</button>
+                    </form>
+                </div>
+            </div>
+            {{ else }}
+            <a href="/login">login</a>
+            <a href="/register">register</a>
+            {{ end }}
+        </div>
+    </nav>
+
+    {{ block "content" . }}
+    {{ end }}
+
+    <script>
+        document.addEventListener('click', function (e) {
+            const dropdown = document.getElementById('user-dropdown');
+            if (dropdown && !e.target.closest('.user-menu')) {
+                dropdown.classList.remove('open');
+            }
+        });
+    </script>
+</body>
+
+</html>
+
+{{ end }}

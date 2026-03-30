@@ -1,0 +1,44 @@
+{{ define "update_post.html" }}
+
+{{ template "layout" . }}
+
+<div class="form-wrap">
+    <div class="form-title">Edit post</div>
+
+    {{ if .error }}
+    <div class="error-msg">{{ .error }}</div>
+    {{ end }}
+
+    <form method="post" action="/posts/update/{{ .post.ID }}">
+        <div class="field">
+            <label>Title</label>
+            <input type="text" name="title" value="{{ .post.Title }}">
+        </div>
+
+        <div class="field">
+            <label>Content</label>
+            <textarea name="entry">{{ .post.Entry }}</textarea>
+        </div>
+
+        <div class="field">
+            <label>Category</label>
+            <select name="category_id">
+                <option value="">-- select existing --</option>
+                {{ range .categories }}
+                <option value="{{ .ID }}" {{ if eq .ID $.post.Category.ID }}selected{{ end }}>{{ .Name }}</option>
+                {{ end }}
+            </select>
+        </div>
+
+        <div class="divider"><span>or create new</span></div>
+
+        <div class="field">
+            <label>New category name</label>
+            <input type="text" name="category_name" placeholder="e.g. Rust, DevOps...">
+        </div>
+
+        <button class="btn-submit" type="submit">Save changes</button>
+    </form>
+</div>
+
+{{ end }}

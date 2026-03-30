@@ -2,6 +2,7 @@ package repository
 
 import (
 	"errors"
+	"log"
 
 	"github.com/SaviolaX/blog/internal/model"
 	"gorm.io/gorm"
@@ -28,7 +29,7 @@ func (pr *postRepository) Delete(id uint) error {
 }
 
 func (pr *postRepository) Update(post *model.Post) error {
-	err := pr.db.Model(&post).Updates(model.Post{Title: post.Title, Entry: post.Entry})
+	err := pr.db.Model(&post).Updates(model.Post{Title: post.Title, Entry: post.Entry, CategoryID: post.CategoryID})
 	if err.Error != nil {
 		return errors.New("post not updated")
 	}
@@ -38,7 +39,8 @@ func (pr *postRepository) Update(post *model.Post) error {
 func (pr *postRepository) FindByID(id uint) (*model.Post, error) {
 	var post model.Post
 
-	err := pr.db.First(&post, id)
+	err := pr.db.Preload("Category").First(&post, id)
+	log.Println("repo post category:", post.Category)
 	if err.Error != nil {
 		return nil, errors.New("post not found by ID")
 	}
@@ -49,7 +51,7 @@ func (pr *postRepository) FindByID(id uint) (*model.Post, error) {
 func (pr *postRepository) FindAll() ([]model.Post, error) {
 	var posts []model.Post
 
-	err := pr.db.Find(&posts)
+	err := pr.db.Preload("Category").Find(&posts)
 	if err.Error != nil {
 		return posts, errors.New("posts not found")
 	}

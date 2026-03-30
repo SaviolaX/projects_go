@@ -1,0 +1,31 @@
+{{ define "register_user.html" }}
+
+{{ template "layout" . }}
+
+<div class="auth-wrap">
+    <div class="auth-title">Create account</div>
+    <div class="auth-sub">Join the blog</div>
+
+    {{ if .error }}
+    <div class="error-msg">{{ .error }}</div>
+    {{ end }}
+
+    <form method="post" action="/register">
+        <div class="field">
+            <label>Username</label>
+            <input type="text" name="username" placeholder="your username">
+        </div>
+        <div class="field">
+            <label>Email</label>
+            <input type="email" name="email" placeholder="you@example.com">
+        </div>
+        <div class="field">
+            <label>Password</label>
+            <input type="password" name="password" placeholder="••••••••">
+        </div>
+        <button class="btn-submit" type="submit">Create account</button>
+    </form>
+    <div class="auth-footer">Already have account? <a href="/login">Sign in</a></div>
+</div>
+
+{{ end }}

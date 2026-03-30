@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"net/http"
-	"strings"
 
 	"github.com/SaviolaX/blog/internal/auth"
 	"github.com/gin-gonic/gin"
@@ -10,21 +9,17 @@ import (
 
 func AuthMiddleware(secret string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		authHeader := ctx.GetHeader("Authorization")
-		if authHeader == "" {
-			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-				"error": "Authorization header is missing",
-			})
+		authHeader, err := ctx.Cookie("token")
+		if err != nil {
+			ctx.Redirect(http.StatusSeeOther, "/login")
+			ctx.Abort()
 			return
 		}
 
-		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
-
-		claims, err := auth.ValidateToken(tokenString, secret)
+		claims, err := auth.ValidateToken(authHeader, secret)
 		if err != nil {
-			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-				"error": "Invalid token",
-			})
+			ctx.Redirect(http.StatusSeeOther, "/login")
+			ctx.Abort()
 			return
 		}
 

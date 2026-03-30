@@ -1,0 +1,139 @@
+{{ define "create_post.html" }}
+{{ template "layout" . }}
+
+<style>
+    .form-wrap {
+        max-width: 640px;
+        margin: 0 auto;
+        padding: 2rem 1.5rem;
+    }
+
+    .form-title {
+        font-size: 22px;
+        font-weight: 500;
+        color: #D3D1C7;
+        margin-bottom: 2rem;
+    }
+
+    .field {
+        margin-bottom: 1.25rem;
+    }
+
+    label {
+        display: block;
+        font-size: 12px;
+        color: #5F5E5A;
+        margin-bottom: 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    input[type="text"],
+    textarea,
+    select {
+        width: 100%;
+        background: #222120;
+        border: 0.5px solid #2C2C2A;
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-size: 14px;
+        color: #D3D1C7;
+        outline: none;
+        font-family: sans-serif;
+    }
+
+    input[type="text"]:focus,
+    textarea:focus,
+    select:focus {
+        border-color: #534AB7;
+    }
+
+    textarea {
+        resize: vertical;
+        min-height: 160px;
+        line-height: 1.6;
+    }
+
+    select option {
+        background: #222120;
+    }
+
+    .divider {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 1.25rem 0;
+    }
+
+    .divider span {
+        font-size: 12px;
+        color: #5F5E5A;
+        white-space: nowrap;
+    }
+
+    .divider::before,
+    .divider::after {
+        content: "";
+        flex: 1;
+        height: 0.5px;
+        background: #2C2C2A;
+    }
+
+    .btn-submit {
+        width: 100%;
+        margin-top: 1.5rem;
+        padding: 10px;
+        font-size: 14px;
+        font-weight: 500;
+        background: #26215C;
+        color: #CECBF6;
+        border: 0.5px solid #534AB7;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+
+    .btn-submit:hover {
+        background: #3C3489;
+    }
+</style>
+
+<div class="form-wrap">
+    <div class="form-title">New post</div>
+
+    {{ if .error }}
+    <p style="color: #F0997B; font-size: 14px; margin-bottom: 1rem;">{{ .error }}</p>
+    {{ end }}
+
+    <form method="post" action="/posts/create">
+        <div class="field">
+            <label>Title</label>
+            <input type="text" name="title" placeholder="Post title">
+        </div>
+
+        <div class="field">
+            <label>Content</label>
+            <textarea name="entry" placeholder="Write your post here..."></textarea>
+        </div>
+
+        <div class="field">
+            <label>Category</label>
+            <select name="category_id">
+                <option value="">-- select existing --</option>
+                {{ range .categories }}
+                <option value="{{ .ID }}">{{ .Name }}</option>
+                {{ end }}
+            </select>
+        </div>
+
+        <div class="divider"><span>or create new</span></div>
+
+        <div class="field">
+            <label>New category name</label>
+            <input type="text" name="category_name" placeholder="e.g. Rust, DevOps...">
+        </div>
+
+        <button class="btn-submit" type="submit">Publish post</button>
+    </form>
+</div>
+
+{{ end }}

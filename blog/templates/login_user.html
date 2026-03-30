@@ -1,0 +1,27 @@
+{{ define "login_user.html" }}
+
+{{ template "layout" . }}
+
+<div class="auth-wrap">
+    <div class="auth-title">Welcome back</div>
+    <div class="auth-sub">Sign in to your account</div>
+
+    {{ if .error }}
+    <div class="error-msg">{{ .error }}</div>
+    {{ end }}
+
+    <form method="post" action="/login">
+        <div class="field">
+            <label>Username</label>
+            <input type="text" name="username" placeholder="your username">
+        </div>
+        <div class="field">
+            <label>Password</label>
+            <input type="password" name="password" placeholder="••••••••">
+        </div>
+        <button class="btn-submit" type="submit">Sign in</button>
+    </form>
+    <div class="auth-footer">No account? <a href="/register">Register</a></div>
+</div>
+
+{{ end }}

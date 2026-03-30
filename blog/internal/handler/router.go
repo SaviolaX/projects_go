@@ -2,29 +2,50 @@ package handler
 
 import (
 	"github.com/SaviolaX/blog/internal/middleware"
+	"github.com/SaviolaX/blog/internal/service"
 	"github.com/gin-gonic/gin"
 )
 
-func SetupRouter(uh UserHandler, ph PostHandler, secret string) *gin.Engine {
+func SetupRouter(uh UserHandler, ph PostHandler, ch CategoryHandler, us service.UserService, secret string) *gin.Engine {
 
 	router := gin.Default()
 
+	router.LoadHTMLGlob("templates/*")
+	router.Static("/static", "./static")
+
+	router.Use(middleware.UserMiddleware(us, secret))
+
 	// User
-	router.POST("/api/v1/auth/register", uh.Register)
-	router.POST("/api/v1/auth/login", uh.Login)
+	router.GET("/login", uh.LoginPage)
+	router.POST("/login", uh.LoginSubmit)
+	router.GET("/register", uh.RegisterPage)
+	router.POST("/register", uh.RegisterSubmit)
+	router.POST("/logout", uh.Logout)
 
 	// Post
-	router.GET("/api/v1/posts", ph.FindAll)
-	router.GET("/api/v1/posts/:id", ph.FindByID)
+	router.GET("/", ph.IndexPage)
+	router.GET("/posts/:id", ph.PostDetailPage)
+
+	router.GET("/categories", ch.FindAll)
+	router.GET("/categories/:id", ch.FindByID)
+
+	categoriesGroup := router.Group("/categories")
+
+	categoriesGroup.Use(middleware.AuthMiddleware(secret))
+
+	categoriesGroup.POST("/create", ch.Create)
+	categoriesGroup.POST("/delete/:id", ch.Delete)
 
 	// Secured
-	postsGroup := router.Group("/api/v1/posts")
+	postsGroup := router.Group("/posts")
 
 	postsGroup.Use(middleware.AuthMiddleware(secret))
 
-	postsGroup.POST("/", ph.Create)
-	postsGroup.PUT("/:id", ph.Update)
-	postsGroup.DELETE("/:id", ph.Delete)
+	postsGroup.POST("/create", ph.Create)
+	postsGroup.GET("/create", ph.CreatePage)
+	postsGroup.POST("/update/:id", ph.Update)
+	postsGroup.GET("/update/:id", ph.UpdatePage)
+	postsGroup.POST("/delete/:id", ph.Delete)
 
 	return router
 }

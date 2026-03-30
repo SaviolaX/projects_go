@@ -12,10 +12,20 @@ import (
 type UserService interface {
 	Register(req *dto.RegisterRequest) error
 	Login(req *dto.LoginRequest) (*dto.UserResponse, error)
+	GetByID(id uint) (*model.User, error)
 }
 
 type userService struct {
 	repo repository.UserRepository
+}
+
+func (us *userService) GetByID(id uint) (*model.User, error) {
+	user, err := us.repo.FindByID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }
 
 func (us *userService) Register(req *dto.RegisterRequest) error {

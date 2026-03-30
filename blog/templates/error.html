@@ -1,0 +1,12 @@
+{{ define "error.html" }}
+
+{{ template "layout" . }}
+
+<div class="error-wrap">
+    <div class="error-code">!</div>
+    <div class="error-title">Something went wrong</div>
+    <div class="error-text">{{ .error }}</div>
+    <a class="btn-home" href="/">back to home</a>
+</div>
+
+{{ end }}

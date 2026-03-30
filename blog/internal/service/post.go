@@ -15,7 +15,8 @@ type PostService interface {
 }
 
 type postService struct {
-	repo repository.PostRepository
+	repo         repository.PostRepository
+	categoryRepo repository.CategoryRepository
 }
 
 func (ps *postService) Delete(id uint) error {
@@ -32,7 +33,18 @@ func (ps *postService) Update(id uint, req *dto.UpdatePostRequest) error {
 	post.ID = id
 	post.Title = req.Title
 	post.Entry = req.Entry
-	post.CategoryID = req.CategoryID
+
+	if req.CategoryName != "" {
+		newCategory, err := ps.categoryRepo.Create(&model.Category{
+			Name: req.CategoryName,
+		})
+		if err != nil {
+			return err
+		}
+		post.CategoryID = newCategory.ID
+	} else if req.CategoryID != 0 {
+		post.CategoryID = req.CategoryID
+	}
 
 	err := ps.repo.Update(&post)
 	if err != nil {
@@ -48,9 +60,13 @@ func (ps *postService) FindByID(id uint) (*dto.PostResponse, error) {
 	}
 
 	return &dto.PostResponse{
-		ID:        post.ID,
-		Title:     post.Title,
-		Entry:     post.Entry,
+		ID:    post.ID,
+		Title: post.Title,
+		Entry: post.Entry,
+		Category: dto.CategoryResponse{
+			ID:   post.CategoryID,
+			Name: post.Category.Name,
+		},
 		CreatedAt: post.CreatedAt,
 		UpdatedAt: post.UpdatedAt,
 	}, nil
@@ -64,10 +80,18 @@ func (ps *postService) FindAll() ([]*dto.PostResponse, error) {
 
 	var postsResp []*dto.PostResponse
 	for _, post := range posts {
+		entry := post.Entry
+		if len(entry) > 200 {
+			entry = entry[:200] + "..."
+		}
 		postsResp = append(postsResp, &dto.PostResponse{
-			ID:        post.ID,
-			Title:     post.Title,
-			Entry:     post.Entry,
+			ID:    post.ID,
+			Title: post.Title,
+			Entry: entry,
+			Category: dto.CategoryResponse{
+				ID:   post.CategoryID,
+				Name: post.Category.Name,
+			},
 			CreatedAt: post.CreatedAt,
 			UpdatedAt: post.UpdatedAt,
 		})
@@ -83,6 +107,19 @@ func (ps *postService) Create(req *dto.CreatePostRequest, authorID uint) error {
 	post.Entry = req.Entry
 	post.AuthorID = authorID
 
+	if req.CategoryID != 0 {
+		post.CategoryID = req.CategoryID
+	}
+	if req.CategoryName != "" {
+		newCategory, err := ps.categoryRepo.Create(&model.Category{
+			Name: req.CategoryName,
+		})
+		if err != nil {
+			return err
+		}
+		post.CategoryID = newCategory.ID
+	}
+
 	err := ps.repo.Create(&post)
 	if err != nil {
 		return err
@@ -90,8 +127,9 @@ func (ps *postService) Create(req *dto.CreatePostRequest, authorID uint) error {
 	return nil
 }
 
-func NewPostService(repo repository.PostRepository) PostService {
+func NewPostService(repo repository.PostRepository, categoryRepo repository.CategoryRepository) PostService {
 	return &postService{
-		repo: repo,
+		repo:         repo,
+		categoryRepo: categoryRepo,
 	}
 }

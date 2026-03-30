@@ -16,14 +16,17 @@ func main() {
 
 	userRepo := repository.NewUserRepository(database)
 	postRepo := repository.NewPostRepository(database)
+	categoryRepo := repository.NewCategoryRepository(database)
 
 	userService := service.NewUserService(userRepo)
-	postService := service.NewPostService(postRepo)
+	postService := service.NewPostService(postRepo, categoryRepo)
+	categoryService := service.NewCategoryService(categoryRepo)
 
 	userHandler := handler.NewUserHandler(cfg.JWT.ExpireHours, cfg.JWT.Secret, userService)
-	postHandler := handler.NewPostHandler(postService)
+	postHandler := handler.NewPostHandler(postService, categoryService)
+	categoryHandler := handler.NewCategoryHandler(categoryService)
 
-	r := handler.SetupRouter(userHandler, postHandler, cfg.JWT.Secret)
+	r := handler.SetupRouter(userHandler, postHandler, categoryHandler, userService, cfg.JWT.Secret)
 
 	r.Run(cfg.App.Port)
 }
