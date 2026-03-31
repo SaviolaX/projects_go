@@ -1,11 +1,11 @@
 package handler
 
 import (
-	"log"
 	"net/http"
 	"strconv"
 
 	"github.com/SaviolaX/blog/internal/dto"
+	"github.com/SaviolaX/blog/internal/model"
 	"github.com/SaviolaX/blog/internal/service"
 	"github.com/gin-gonic/gin"
 )
@@ -51,6 +51,12 @@ func (ph *postHandler) CreatePage(ctx *gin.Context) {
 }
 
 func (ph *postHandler) UpdatePage(ctx *gin.Context) {
+	currentUser, exists := ctx.Get("user")
+	if !exists {
+		ctx.Redirect(http.StatusSeeOther, "/")
+		return
+	}
+
 	id, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
 	if err != nil {
 		ctx.HTML(http.StatusBadRequest, "error.html", getTemplateData(ctx, gin.H{"error": "invalid id"}))
@@ -63,7 +69,16 @@ func (ph *postHandler) UpdatePage(ctx *gin.Context) {
 		return
 	}
 
-	log.Printf("Post category: %+v", post.Category)
+	currentUser, ok := currentUser.(*model.User)
+	if !ok {
+		ctx.HTML(http.StatusInternalServerError, "error.html", getTemplateData(ctx, gin.H{"error": "Internal server error"}))
+		return
+	}
+
+	if post.Author.ID != currentUser.(*model.User).ID {
+		ctx.Redirect(http.StatusSeeOther, "/")
+		return
+	}
 
 	categories, err := ph.categoryService.FindAll()
 	if err != nil {
@@ -89,9 +104,32 @@ func (ph *postHandler) IndexPage(ctx *gin.Context) {
 }
 
 func (ph *postHandler) Delete(ctx *gin.Context) {
+	currentUser, exists := ctx.Get("user")
+	if !exists {
+		ctx.Redirect(http.StatusSeeOther, "/")
+		return
+	}
+
 	id, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
 	if err != nil {
 		ctx.HTML(http.StatusBadRequest, "error.html", getTemplateData(ctx, gin.H{"error": "invalid id"}))
+		return
+	}
+
+	post, err := ph.service.FindByID(uint(id))
+	if err != nil {
+		ctx.HTML(http.StatusBadRequest, "error.html", getTemplateData(ctx, gin.H{"error": "invalid id"}))
+		return
+	}
+
+	currentUser, ok := currentUser.(*model.User)
+	if !ok {
+		ctx.HTML(http.StatusInternalServerError, "error.html", getTemplateData(ctx, gin.H{"error": "Internal server error"}))
+		return
+	}
+
+	if post.Author.ID != currentUser.(*model.User).ID {
+		ctx.Redirect(http.StatusSeeOther, "/")
 		return
 	}
 
