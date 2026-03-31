@@ -100,6 +100,12 @@ nav {
     margin-bottom: 6px;
 }
 
+.author-title {
+    font-size: 12px;
+    color: #5F5E5A;
+    margin-bottom: 6px;
+}
+
 .post-entry {
     font-size: 14px;
     color: #888780;
