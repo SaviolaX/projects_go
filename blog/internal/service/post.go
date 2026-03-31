@@ -67,6 +67,10 @@ func (ps *postService) FindByID(id uint) (*dto.PostResponse, error) {
 			ID:   post.CategoryID,
 			Name: post.Category.Name,
 		},
+		Author: dto.UserResponse{
+			ID:       post.AuthorID,
+			Username: post.Author.Username,
+		},
 		CreatedAt: post.CreatedAt,
 		UpdatedAt: post.UpdatedAt,
 	}, nil
@@ -91,6 +95,10 @@ func (ps *postService) FindAll() ([]*dto.PostResponse, error) {
 			Category: dto.CategoryResponse{
 				ID:   post.CategoryID,
 				Name: post.Category.Name,
+			},
+			Author: dto.UserResponse{
+				ID:       post.Author.ID,
+				Username: post.Author.Username,
 			},
 			CreatedAt: post.CreatedAt,
 			UpdatedAt: post.UpdatedAt,
