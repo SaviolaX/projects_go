@@ -16,7 +16,7 @@
     <div class="detail-divider"></div>
     <div class="detail-content">{{ .post.Entry }}</div>
 
-    {{ if .user }}
+    {{if eq $.user.Username .post.Author.Username }}
     <div class="detail-actions">
         <a class="btn-edit" href="/posts/update/{{ .post.ID }}">edit</a>
         <form method="post" action="/posts/delete/{{ .post.ID }}" style="margin:0;">

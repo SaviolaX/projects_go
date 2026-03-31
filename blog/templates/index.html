@@ -16,15 +16,19 @@
             </div>
             <div class="post-meta">{{ .CreatedAt.Format "02 Jan 2006 15:04" }}</div>
             <div class="post-title">{{ .Title }}</div>
+            <div class="author-title">{{ .Author.Username }}</div>
             <div class="post-entry">{{ .Entry }}</div>
             <div class="post-actions">
                 <a class="btn-read" href="/posts/{{ .ID }}">read more</a>
+                {{if eq $.user.Username .Author.Username }}
                 <a href="/posts/update/{{ .ID }}"><button class="btn-edit">edit</button></a>
                 <form method="post" action="/posts/delete/{{ .ID }}" class="form-delete">
                     <button class="btn-delete" type="submit">delete</button>
                 </form>
+                {{ end }}
             </div>
         </div>
+
         {{ else }}
         <p class="empty">No posts available.</p>
         {{ end }}
