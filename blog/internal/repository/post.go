@@ -9,14 +9,25 @@ import (
 
 type PostRepository interface {
 	Create(post *model.Post) error
-	FindAll() ([]model.Post, error)
+	FindAll(limit, offset int) (int64, []model.Post, error)
 	FindByID(id uint) (*model.Post, error)
 	Update(post *model.Post) error
 	Delete(id uint) error
+	FindByCategoryID(id uint) ([]model.Post, error)
 }
 
 type postRepository struct {
 	db *gorm.DB
+}
+
+func (pr *postRepository) FindByCategoryID(id uint) ([]model.Post, error) {
+	var posts []model.Post
+
+	err := pr.db.Preload("Category").Preload("Author").Order("created_at DESC").Where("category_id = ?", id).Find(&posts)
+	if err.Error != nil {
+		return posts, errors.New("posts not found")
+	}
+	return posts, nil
 }
 
 func (pr *postRepository) Delete(id uint) error {
@@ -46,14 +57,18 @@ func (pr *postRepository) FindByID(id uint) (*model.Post, error) {
 	return &post, nil
 }
 
-func (pr *postRepository) FindAll() ([]model.Post, error) {
+func (pr *postRepository) FindAll(limit, offset int) (int64, []model.Post, error) {
 	var posts []model.Post
+	var totalPosts int64
 
-	err := pr.db.Preload("Category").Preload("Author").Order("created_at DESC").Find(&posts)
+	pr.db.Model(&model.Post{}).Count(&totalPosts)
+
+	err := pr.db.Preload("Category").Preload("Author").Order("created_at DESC").Limit(limit).Offset(offset).Find(&posts)
 	if err.Error != nil {
-		return posts, errors.New("posts not found")
+		return 0, posts, errors.New("posts not found")
 	}
-	return posts, nil
+
+	return totalPosts, posts, nil
 }
 
 func (pr *postRepository) Create(post *model.Post) error {
