@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"log"
 	"net/http"
 	"strconv"
 
@@ -18,11 +19,28 @@ type PostHandler interface {
 	UpdatePage(ctx *gin.Context)
 	PostDetailPage(ctx *gin.Context)
 	IndexPage(ctx *gin.Context)
+	PostsByCategory(ctx *gin.Context)
 }
 
 type postHandler struct {
 	service         service.PostService
 	categoryService service.CategoryService
+}
+
+func (ph *postHandler) PostsByCategory(ctx *gin.Context) {
+	id, err := strconv.ParseUint(ctx.Param("categoryID"), 10, 64)
+	if err != nil {
+		ctx.HTML(http.StatusBadRequest, "error.html", getTemplateData(ctx, gin.H{"error": "invalid category id"}))
+		return
+	}
+
+	posts, err := ph.service.FindByCategoryID(uint(id))
+	if err != nil {
+		ctx.HTML(http.StatusBadRequest, "error.html", getTemplateData(ctx, gin.H{"error": "invalid cateogory id"}))
+		return
+	}
+
+	ctx.HTML(http.StatusOK, "posts_by_category.html", getTemplateData(ctx, gin.H{"posts": posts}))
 }
 
 func (ph *postHandler) PostDetailPage(ctx *gin.Context) {
@@ -90,7 +108,20 @@ func (ph *postHandler) UpdatePage(ctx *gin.Context) {
 }
 
 func (ph *postHandler) IndexPage(ctx *gin.Context) {
-	posts, err := ph.service.FindAll()
+	page := ctx.Query("page")
+	if page == "" {
+		page = "1"
+	}
+
+	pageInt, err := strconv.Atoi(page)
+	if err != nil {
+		ctx.HTML(http.StatusInternalServerError, "error.html", getTemplateData(ctx, gin.H{
+			"error": "Incorrect page number",
+		}))
+		return
+	}
+
+	totalPages, currPage, posts, err := ph.service.FindAll(pageInt)
 	if err != nil {
 		ctx.HTML(http.StatusInternalServerError, "error.html", getTemplateData(ctx, gin.H{
 			"error": "Failed to load posts",
@@ -98,8 +129,23 @@ func (ph *postHandler) IndexPage(ctx *gin.Context) {
 		return
 	}
 
+	log.Println(totalPages, currPage)
+
+	categories, err := ph.categoryService.FindAll()
+	if err != nil {
+		ctx.HTML(http.StatusInternalServerError, "error.html", getTemplateData(ctx, gin.H{
+			"error": "Failed to load categories",
+		}))
+		return
+	}
+
 	ctx.HTML(http.StatusOK, "index.html", getTemplateData(ctx, gin.H{
-		"posts": posts,
+		"totalPages": totalPages,
+		"currPage":   currPage,
+		"nextPage":   currPage + 1,
+		"prevPage":   currPage - 1,
+		"posts":      posts,
+		"categories": categories,
 	}))
 }
 
