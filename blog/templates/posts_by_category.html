@@ -1,0 +1,36 @@
+{{ define "posts_by_category.html" }}
+
+{{ template "layout" . }}
+
+<div class="page">
+    <div class="page-header">
+        <h1>Latest posts</h1>
+        <p>All articles, thoughts and notes</p>
+    </div>
+    <div class="posts">
+        {{ range .posts }}
+        <div class="post-card">
+            <div class="category-badges">
+                <span class="category-badge">{{ .Category.Name }}</span>
+            </div>
+            <div class="post-meta">{{ .CreatedAt.Format "02 Jan 2006 15:04" }}</div>
+            <div class="post-title">{{ .Title }}</div>
+            <div class="author-title">{{ .Author.Username }}</div>
+            <div class="post-entry">{{ .Entry }}</div>
+            <div class="post-actions">
+                <a class="btn-read" href="/posts/{{ .ID }}">read more</a>
+                {{if eq $.user.Username .Author.Username }}
+                <a href="/posts/update/{{ .ID }}"><button class="btn-edit">edit</button></a>
+                <form method="post" action="/posts/delete/{{ .ID }}" class="form-delete">
+                    <button class="btn-delete" type="submit">delete</button>
+                </form>
+                {{ end }}
+            </div>
+        </div>
+        {{ else }}
+        <p class="empty">No posts available.</p>
+        {{ end }}
+    </div>
+</div>
+
+{{ end }}

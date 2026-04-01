@@ -13,6 +13,7 @@ body {
     max-width: 780px;
     margin: 0 auto;
     padding: 0 1.5rem 3rem;
+    flex: 1;
 }
 
 nav {
@@ -512,4 +513,73 @@ select option {
 
 .form-delete {
     margin-left: auto;
+}
+
+.layout {
+    display: flex;
+    gap: 2rem;
+    padding-left: 2rem; /* відступ від лівого краю */
+}
+
+/* left block */
+.categories {
+    width: 220px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 117px;
+
+    background: #222120;
+    border: 0.5px solid #2C2C2A;
+    border-radius: 12px;
+    padding: 1rem;
+
+    height: fit-content; 
+}
+
+/* optional title */
+.categories::before {
+    content: "Categories";
+    font-size: 13px;
+    color: #5F5E5A;
+    margin-bottom: 0.5rem;
+}
+
+.category-item a {
+    display: block;
+    font-size: 13px;
+    color: #888780;
+    text-decoration: none;
+    padding: 6px 10px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.category-item a:hover {
+    background: #2C2C2A;
+    color: #D3D1C7;
+}
+
+.pagination {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 2rem;
+    justify-content: center;
+}
+
+.btn-pagination {
+    font-size: 13px;
+    color: #CECBF6;
+    text-decoration: none;
+    background: #26215C;
+    border: 0.5px solid #534AB7;
+    border-radius: 8px;
+    padding: 5px 12px;
+}
+
+.pagination-current {
+    font-size: 13px;
+    color: #5F5E5A;
+    padding: 5px 12px;
 }
