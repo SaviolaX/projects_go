@@ -25,6 +25,7 @@ func SetupRouter(uh UserHandler, ph PostHandler, ch CategoryHandler, us service.
 	// Post
 	router.GET("/", ph.IndexPage)
 	router.GET("/posts/:id", ph.PostDetailPage)
+	router.GET("/posts/category/:categoryID", ph.PostsByCategory)
 
 	router.GET("/categories", ch.FindAll)
 	router.GET("/categories/:id", ch.FindByID)
