@@ -8,15 +8,48 @@ import (
 
 type PostService interface {
 	Create(req *dto.CreatePostRequest, authorID uint) error
-	FindAll() ([]*dto.PostResponse, error)
+	FindAll(int) (int64, int, []*dto.PostResponse, error)
 	FindByID(id uint) (*dto.PostResponse, error)
 	Update(id uint, req *dto.UpdatePostRequest) error
 	Delete(id uint) error
+	FindByCategoryID(id uint) ([]*dto.PostResponse, error)
 }
 
 type postService struct {
 	repo         repository.PostRepository
 	categoryRepo repository.CategoryRepository
+}
+
+func (ps *postService) FindByCategoryID(id uint) ([]*dto.PostResponse, error) {
+	posts, err := ps.repo.FindByCategoryID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	var postsResp []*dto.PostResponse
+	for _, post := range posts {
+		entry := post.Entry
+		if len(entry) > 200 {
+			entry = entry[:200] + "..."
+		}
+		postsResp = append(postsResp, &dto.PostResponse{
+			ID:    post.ID,
+			Title: post.Title,
+			Entry: entry,
+			Category: dto.CategoryResponse{
+				ID:   post.CategoryID,
+				Name: post.Category.Name,
+			},
+			Author: dto.UserResponse{
+				ID:       post.Author.ID,
+				Username: post.Author.Username,
+			},
+			CreatedAt: post.CreatedAt,
+			UpdatedAt: post.UpdatedAt,
+		})
+	}
+
+	return postsResp, nil
 }
 
 func (ps *postService) Delete(id uint) error {
@@ -76,11 +109,17 @@ func (ps *postService) FindByID(id uint) (*dto.PostResponse, error) {
 	}, nil
 }
 
-func (ps *postService) FindAll() ([]*dto.PostResponse, error) {
-	posts, err := ps.repo.FindAll()
+func (ps *postService) FindAll(page int) (int64, int, []*dto.PostResponse, error) {
+	limit := 2
+
+	offset := (page - 1) * limit
+
+	totalPosts, posts, err := ps.repo.FindAll(limit, offset)
 	if err != nil {
-		return nil, err
+		return 0, 0, nil, err
 	}
+
+	totalPages := (totalPosts + int64(limit) - 1) / int64(limit)
 
 	var postsResp []*dto.PostResponse
 	for _, post := range posts {
@@ -105,7 +144,7 @@ func (ps *postService) FindAll() ([]*dto.PostResponse, error) {
 		})
 	}
 
-	return postsResp, nil
+	return totalPages, page, postsResp, nil
 }
 
 func (ps *postService) Create(req *dto.CreatePostRequest, authorID uint) error {
